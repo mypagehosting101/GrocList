@@ -1,0 +1,1225 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>7-Day Meal Plan</title>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',sans-serif;background:#f8f7f4;color:#1a1a1a;font-size:15px;line-height:1.6}
+:root{--teal:#1D9E75;--teal-light:#E1F5EE;--teal-mid:#0F6E56;--border:#e5e3de;--card:#fff;--bg:#f8f7f4;--text:#1a1a1a;--muted:#666;--hint:#999}
+
+/* NAV */
+.app-nav{background:#fff;border-bottom:1px solid var(--border);display:flex;align-items:center;gap:0;padding:0 20px;position:sticky;top:0;z-index:100}
+.nav-brand{font-size:15px;font-weight:600;color:var(--teal);padding:14px 0;margin-right:24px;white-space:nowrap}
+.nav-tabs{display:flex;gap:0;overflow-x:auto}
+.nav-tab{padding:14px 16px;font-size:13px;font-weight:500;color:var(--muted);border:none;background:none;cursor:pointer;border-bottom:2px solid transparent;white-space:nowrap;transition:color .15s}
+.nav-tab:hover{color:var(--text)}
+.nav-tab.active{color:var(--teal);border-bottom-color:var(--teal)}
+
+/* LAYOUT */
+.page{display:none;padding:20px}
+.page.active{display:block}
+.page-title{font-size:18px;font-weight:600;margin-bottom:4px}
+.page-sub{font-size:13px;color:var(--muted);margin-bottom:20px}
+
+/* DAY STRIP */
+.day-strip{display:flex;gap:6px;margin-bottom:20px;flex-wrap:wrap}
+.day-btn{padding:6px 14px;border-radius:20px;font-size:13px;font-weight:500;border:1px solid var(--border);background:#fff;color:var(--muted);cursor:pointer;transition:all .15s}
+.day-btn:hover{border-color:var(--teal);color:var(--teal)}
+.day-btn.active{background:var(--teal);color:#fff;border-color:var(--teal)}
+
+/* CARDS */
+.card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:14px}
+.card-header{display:flex;align-items:flex-start;justify-content:space-between;margin-bottom:12px}
+.card-title{font-size:16px;font-weight:600}
+.card-sub{font-size:12px;color:var(--muted);margin-top:2px}
+.badge{display:inline-block;font-size:11px;font-weight:500;padding:3px 10px;border-radius:20px;background:var(--teal-light);color:var(--teal-mid)}
+.badge-amber{background:#FAEEDA;color:#633806}
+.badge-purple{background:#EEEDFE;color:#3C3489}
+
+/* MACRO ROW */
+.macro-row{display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin:12px 0}
+.macro-cell{background:#f8f7f4;border-radius:8px;padding:8px;text-align:center}
+.macro-val{font-size:17px;font-weight:600;color:var(--text)}
+.macro-lbl{font-size:11px;color:var(--muted);margin-top:1px}
+
+/* INGREDIENTS / STEPS */
+.section-label{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin:14px 0 8px}
+.ing-list{list-style:none}
+.ing-item{display:flex;align-items:flex-start;gap:8px;padding:5px 0;border-bottom:1px solid #f0eeea;font-size:14px}
+.ing-item:last-child{border-bottom:none}
+.ing-dot{width:6px;height:6px;border-radius:50%;background:var(--teal);margin-top:7px;flex-shrink:0}
+.ing-sep{font-size:12px;font-weight:600;color:var(--teal);padding:8px 0 4px;text-transform:uppercase;letter-spacing:.04em}
+.step-list{list-style:none;counter-reset:steps}
+.step-item{display:flex;gap:12px;padding:8px 0;border-bottom:1px solid #f0eeea;font-size:14px;counter-increment:steps}
+.step-item:last-child{border-bottom:none}
+.step-num{width:24px;height:24px;border-radius:50%;background:var(--teal-light);color:var(--teal-mid);font-size:12px;font-weight:600;display:flex;align-items:center;justify-content:center;flex-shrink:0;margin-top:1px}
+.tip-box{background:var(--teal-light);border-left:3px solid var(--teal);border-radius:0 8px 8px 0;padding:10px 14px;font-size:13px;color:var(--teal-mid);margin-top:12px}
+.tip-box strong{font-weight:600}
+
+/* PORTIONS */
+.portions-row{display:flex;align-items:center;gap:12px;background:#f8f7f4;border-radius:8px;padding:10px 14px;margin-bottom:12px}
+.portions-label{font-size:13px;color:var(--muted);flex:1}
+.portions-ctrl{display:flex;align-items:center;gap:8px}
+.qty-btn{width:28px;height:28px;border-radius:50%;border:1px solid var(--border);background:#fff;font-size:16px;cursor:pointer;display:flex;align-items:center;justify-content:center;color:var(--text);font-weight:500}
+.qty-btn:hover{border-color:var(--teal);color:var(--teal)}
+.qty-val{font-size:16px;font-weight:600;min-width:20px;text-align:center}
+
+/* COOK MODE */
+.cook-step{background:#fff;border:1px solid var(--border);border-radius:12px;padding:18px;margin-bottom:10px;transition:all .2s}
+.cook-step.current{border-color:var(--teal);border-width:2px}
+.cook-step.done{opacity:.5}
+.cook-step-header{display:flex;align-items:center;gap:12px;margin-bottom:8px}
+.cook-num{width:32px;height:32px;border-radius:50%;background:var(--teal-light);color:var(--teal-mid);font-weight:600;font-size:14px;display:flex;align-items:center;justify-content:center;flex-shrink:0}
+.cook-step.current .cook-num{background:var(--teal);color:#fff}
+.cook-step.done .cook-num{background:#e5e3de;color:#999}
+.cook-step-title{font-size:14px;font-weight:500}
+.cook-step-text{font-size:14px;color:var(--muted);line-height:1.6;padding-left:44px}
+.cook-controls{display:flex;gap:8px;margin-top:12px;padding-left:44px;flex-wrap:wrap}
+.btn{padding:8px 16px;border-radius:8px;font-size:13px;font-weight:500;cursor:pointer;border:1px solid var(--border);background:#fff;color:var(--text);transition:all .15s}
+.btn:hover{border-color:var(--teal);color:var(--teal)}
+.btn-primary{background:var(--teal);color:#fff;border-color:var(--teal)}
+.btn-primary:hover{background:var(--teal-mid);border-color:var(--teal-mid);color:#fff}
+.btn-sm{padding:5px 12px;font-size:12px}
+
+/* TIMER */
+.timer-box{display:inline-flex;align-items:center;gap:8px;background:#fff;border:1px solid var(--border);border-radius:8px;padding:6px 12px;font-size:13px;margin-top:8px}
+.timer-display{font-size:15px;font-weight:600;font-family:monospace;color:var(--teal);min-width:50px}
+.timer-box.running{border-color:var(--teal)}
+.timer-box.done-timer{border-color:#E24B4A;background:#FCEBEB}
+.timer-box.done-timer .timer-display{color:#A32D2D}
+
+/* GROCERY */
+.grocery-section{margin-bottom:20px}
+.grocery-section-title{font-size:13px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.grocery-item{display:flex;align-items:center;gap:10px;padding:7px 0;border-bottom:1px solid #f0eeea;font-size:14px}
+.grocery-item:last-child{border-bottom:none}
+.grocery-item input[type=checkbox]{width:16px;height:16px;accent-color:var(--teal);cursor:pointer;flex-shrink:0}
+.grocery-item.checked{text-decoration:line-through;color:var(--hint)}
+.grocery-qty{font-weight:500;color:var(--teal);min-width:80px;font-size:13px}
+.grocery-actions{display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap}
+.progress-bar{height:4px;background:#f0eeea;border-radius:2px;margin-bottom:16px}
+.progress-fill{height:100%;background:var(--teal);border-radius:2px;transition:width .3s}
+
+/* MACROS PAGE */
+.day-summary-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:10px;margin-bottom:16px}
+.summary-card{background:#fff;border:1px solid var(--border);border-radius:10px;padding:14px}
+.summary-card-day{font-size:12px;font-weight:500;color:var(--muted);margin-bottom:4px}
+.summary-card-cal{font-size:22px;font-weight:600;color:var(--text)}
+.summary-card-macros{font-size:12px;color:var(--muted);margin-top:2px}
+.tracker-section{margin-bottom:20px}
+.log-row{display:flex;align-items:center;gap:10px;padding:8px 0;border-bottom:1px solid #f0eeea;font-size:14px}
+.log-row:last-child{border-bottom:none}
+.log-meal{flex:1;color:var(--text)}
+.log-cal{font-weight:500;color:var(--teal);min-width:60px;text-align:right}
+.log-remove{color:var(--hint);cursor:pointer;font-size:18px;line-height:1;padding:0 4px}
+.log-remove:hover{color:#E24B4A}
+.daily-total{background:var(--teal-light);border-radius:8px;padding:12px 14px;display:flex;justify-content:space-between;align-items:center;margin-top:12px}
+.daily-total-label{font-size:13px;font-weight:500;color:var(--teal-mid)}
+.daily-total-val{font-size:20px;font-weight:600;color:var(--teal-mid)}
+.add-log-row{display:flex;gap:8px;margin-top:10px;flex-wrap:wrap}
+select{padding:7px 10px;border-radius:8px;border:1px solid var(--border);background:#fff;font-size:13px;color:var(--text)}
+
+/* MEAL PREP */
+.prep-card{background:#fff;border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px}
+.prep-card-title{font-size:14px;font-weight:600;margin-bottom:6px}
+.prep-tip{font-size:13px;color:var(--muted);line-height:1.6}
+.prep-tag{display:inline-block;font-size:11px;padding:2px 8px;border-radius:10px;background:#EAF3DE;color:#27500A;margin-right:4px;margin-bottom:4px}
+.prep-tag-amber{background:#FAEEDA;color:#633806}
+
+/* SWAP */
+.swap-card{border:1px solid var(--border);border-radius:12px;padding:16px;margin-bottom:10px;cursor:pointer;transition:border-color .15s}
+.swap-card:hover{border-color:var(--teal)}
+.swap-card.selected{border-color:var(--teal);border-width:2px}
+.swap-card-title{font-size:14px;font-weight:600;margin-bottom:4px}
+.swap-card-desc{font-size:13px;color:var(--muted)}
+.two-col{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+@media(max-width:520px){.two-col{grid-template-columns:1fr}.macro-row{grid-template-columns:repeat(2,1fr)}.day-summary-grid{grid-template-columns:1fr}}
+</style>
+</head>
+<body>
+
+<h2 class="sr-only" style="position:absolute;width:1px;height:1px;overflow:hidden">Interactive 7-day meal plan with grocery list, cooking mode, nutrition tracker, and meal prep guide</h2>
+
+<nav class="app-nav">
+  <div class="nav-brand">7-Day Meal Plan</div>
+  <div class="nav-tabs">
+    <button class="nav-tab active" onclick="showPage('recipes')">Recipes</button>
+    <button class="nav-tab" onclick="showPage('cook')">Cook mode</button>
+    <button class="nav-tab" onclick="showPage('grocery')">Grocery list</button>
+    <button class="nav-tab" onclick="showPage('macros')">Macro tracker</button>
+    <button class="nav-tab" onclick="showPage('prep')">Meal prep</button>
+    <button class="nav-tab" onclick="showPage('swap')">Swap a meal</button>
+  </div>
+</nav>
+
+<!-- ═══════════════════════════════════════════ RECIPES PAGE -->
+<div id="page-recipes" class="page active">
+  <div class="day-strip" id="recipe-days"></div>
+  <div id="recipe-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ COOK MODE PAGE -->
+<div id="page-cook" class="page">
+  <p class="page-sub" style="margin-top:8px">Step-by-step cooking with timers. Select a day and meal to begin.</p>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <select id="cook-day-select" onchange="updateCookMeal()"></select>
+    <select id="cook-meal-select" onchange="renderCookMode()">
+      <option value="light">Light meal</option>
+      <option value="dinner">Big dinner</option>
+    </select>
+  </div>
+  <div id="cook-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ GROCERY PAGE -->
+<div id="page-grocery" class="page">
+  <p class="page-sub" style="margin-top:8px">Full week automatically calculated for <span id="grocery-servings-label">2 servings</span>. Adjust serving size below.</p>
+  <div style="display:flex;align-items:center;gap:12px;margin-bottom:16px;flex-wrap:wrap">
+    <div style="display:flex;align-items:center;gap:8px">
+      <span style="font-size:13px;color:var(--muted)">Servings:</span>
+      <button class="qty-btn" onclick="changeGroceryServings(-1)">−</button>
+      <span class="qty-val" id="grocery-servings-num">2</span>
+      <button class="qty-btn" onclick="changeGroceryServings(1)">+</button>
+    </div>
+    <div class="grocery-actions" style="margin:0">
+      <button class="btn btn-sm" onclick="checkAllGrocery()">Check all</button>
+      <button class="btn btn-sm" onclick="clearAllGrocery()">Clear all</button>
+    </div>
+  </div>
+  <div class="progress-bar"><div class="progress-fill" id="grocery-progress" style="width:0%"></div></div>
+  <div id="grocery-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ MACRO TRACKER PAGE -->
+<div id="page-macros" class="page">
+  <p class="page-sub" style="margin-top:8px">Log what you've eaten today and track against your targets.</p>
+  <div class="tracker-section">
+    <div class="section-label">Today's log</div>
+    <div id="macro-log"></div>
+    <div class="add-log-row">
+      <select id="log-day-select"></select>
+      <select id="log-meal-select">
+        <option value="light">Light meal</option>
+        <option value="dinner">Big dinner</option>
+      </select>
+      <button class="btn btn-primary btn-sm" onclick="logMeal()">+ Add</button>
+    </div>
+  </div>
+  <div class="section-label">Weekly overview</div>
+  <div class="day-summary-grid" id="weekly-overview"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ MEAL PREP PAGE -->
+<div id="page-prep" class="page">
+  <p class="page-sub" style="margin-top:8px">Batch cooking tips to save time across the week.</p>
+  <div id="prep-content"></div>
+</div>
+
+<!-- ═══════════════════════════════════════════ SWAP PAGE -->
+<div id="page-swap" class="page">
+  <p class="page-sub" style="margin-top:8px">Not feeling a meal? Swap it for something with similar macros.</p>
+  <div style="display:flex;gap:8px;margin-bottom:16px;flex-wrap:wrap">
+    <select id="swap-day-select" onchange="renderSwap()"></select>
+    <select id="swap-meal-select" onchange="renderSwap()">
+      <option value="light">Light meal</option>
+      <option value="dinner">Big dinner</option>
+    </select>
+  </div>
+  <div id="swap-content"></div>
+</div>
+
+<script>
+const DAYS = ['Monday','Tuesday','Wednesday','Thursday','Friday','Saturday','Sunday'];
+
+const DATA = {
+  Monday: {
+    light: {
+      name: 'Egg white veggie scramble + corn tortillas',
+      cal:340, pro:38, fat:7, carb:28,
+      ingredients: [
+        {qty:'8 large', item:'egg whites (or ~240ml carton)'},
+        {qty:'1/2 cup', item:'bell pepper, diced'},
+        {qty:'1/4 cup', item:'onion, diced'},
+        {qty:'1 handful', item:'baby spinach'},
+        {qty:'1 oz (28g)', item:'reduced-fat cheddar or Mexican blend cheese'},
+        {qty:'to taste', item:'salt, black pepper, garlic powder'},
+        {qty:'as needed', item:'cooking spray'},
+        {qty:'2 small', item:'corn tortillas'},
+        {qty:'to serve', item:'salsa or hot sauce'},
+      ],
+      steps: [
+        'Heat a non-stick pan over medium heat and spray with cooking spray.',
+        'Add diced onion and bell pepper. Cook 3–4 min until softened.',
+        'Add spinach and stir until wilted, about 1 min.',
+        'Pour egg whites over the vegetables. Season with salt, pepper, garlic powder.',
+        'Stir gently as they cook. Pull off heat when just set, about 3 min.',
+        'Top with cheese and let melt 30 seconds.',
+        'Warm tortillas in a dry pan 30 sec per side.',
+        'Serve with tortillas and salsa.',
+      ],
+      tip: "Don't overcook egg whites — pull them off while slightly wet.",
+    },
+    dinner: {
+      name: 'Jerk chicken with cauliflower rice',
+      cuisine:'Jamaican',
+      cal:1050, pro:114, fat:10, carb:90,
+      ingredients: [
+        {qty:'8 oz (225g)', item:'boneless skinless chicken thighs'},
+        {sep:'Jerk marinade'},
+        {qty:'2', item:'scotch bonnet peppers (or habaneros), roughly chopped'},
+        {qty:'4 cloves', item:'garlic'},
+        {qty:'1-inch piece', item:'fresh ginger, peeled'},
+        {qty:'3', item:'green onions, roughly chopped'},
+        {qty:'2 tbsp', item:'low-sodium soy sauce'},
+        {qty:'1 tbsp', item:'fresh lime juice'},
+        {qty:'1 tsp', item:'ground allspice'},
+        {qty:'1 tsp', item:'dried thyme'},
+        {qty:'1/2 tsp', item:'cinnamon'},
+        {qty:'1/2 tsp', item:'black pepper'},
+        {qty:'1 tsp', item:'brown sugar'},
+        {sep:'Cauliflower rice'},
+        {qty:'4 cups', item:'riced cauliflower (or 1 large head)'},
+        {qty:'3', item:'green onions, sliced'},
+        {qty:'1 tsp', item:'fresh thyme leaves'},
+        {qty:'1/2 tsp', item:'garlic powder'},
+        {qty:'to taste', item:'salt and pepper'},
+        {qty:'as needed', item:'cooking spray'},
+      ],
+      steps: [
+        'Blend all jerk marinade ingredients until smooth. It should be fiery, fragrant, savoury.',
+        'Score chicken thighs 2–3 shallow cuts per piece. Coat in marinade. Refrigerate at least 4 hours, ideally overnight.',
+        'Preheat oven to 425°F (220°C). Line a baking tray with foil; place a wire rack on top if you have one.',
+        'Bake chicken at 425°F for 25–30 min until outside is darkened and internal temp hits 165°F (74°C).',
+        'For extra char: switch to broil for the final 3–4 min. Watch closely.',
+        'Air fryer option: 400°F (200°C) for 18–20 min, flipping halfway.',
+        'Pulse cauliflower into rice-sized pieces in a food processor (don\'t over-process).',
+        'Stir-fry cauliflower rice in a hot pan with cooking spray, green onion, thyme, salt, and pepper for 5–7 min.',
+        'Serve chicken over cauliflower rice with lime wedges.',
+      ],
+      tip: 'Overnight marinade is essential. The broil finish gets you the char you\'d get from a grill.',
+    }
+  },
+  Tuesday: {
+    light: {
+      name: 'Nonfat Greek yogurt parfait',
+      cal:290, pro:42, fat:2, carb:34,
+      ingredients: [
+        {qty:'2 cups (480g)', item:'nonfat plain Greek yogurt (Fage 0% or Chobani)'},
+        {qty:'1 cup', item:'fresh or frozen strawberries, sliced'},
+        {qty:'1 tsp', item:'honey'},
+        {qty:'pinch', item:'cinnamon (optional)'},
+      ],
+      steps: [
+        'If using frozen strawberries, thaw slightly so they release their juices.',
+        'Layer yogurt in a bowl or tall glass.',
+        'Top with strawberries and drizzle with honey.',
+        'Add cinnamon if desired.',
+        'Eat with a spoon — thick texture is more satisfying than a smoothie.',
+      ],
+      tip: 'Buy the largest tub of nonfat Greek yogurt you can — much cheaper per serving.',
+    },
+    dinner: {
+      name: 'Tandoori turkey kebabs with green lentils',
+      cuisine:'Indian',
+      cal:1070, pro:116, fat:11, carb:72,
+      ingredients: [
+        {qty:'8 oz (225g)', item:'ground turkey or turkey breast chunks'},
+        {sep:'Tandoori marinade'},
+        {qty:'1/2 cup', item:'nonfat plain yogurt'},
+        {qty:'2 tsp', item:'tandoori masala powder'},
+        {qty:'1 tsp', item:'cumin'},
+        {qty:'1 tsp', item:'coriander'},
+        {qty:'1/2 tsp', item:'turmeric'},
+        {qty:'1/2 tsp', item:'chili powder'},
+        {qty:'3 cloves', item:'garlic, minced'},
+        {qty:'1 tsp', item:'fresh ginger, grated'},
+        {qty:'juice of 1/2', item:'lemon'},
+        {qty:'to taste', item:'salt'},
+        {sep:'Lentils'},
+        {qty:'1.5 cups (300g)', item:'dry green or brown lentils'},
+        {qty:'1/2', item:'white onion, finely diced'},
+        {qty:'2 cloves', item:'garlic, minced'},
+        {qty:'1 tsp', item:'cumin seeds'},
+        {qty:'1/2 tsp', item:'turmeric'},
+        {qty:'to garnish', item:'fresh coriander'},
+        {qty:'to serve', item:'lemon wedges'},
+      ],
+      steps: [
+        'Mix all marinade ingredients. For ground turkey, mix directly into the meat; form into kebab shapes on skewers or into patties.',
+        'Marinate at least 1 hour, up to overnight.',
+        'Simmer lentils in 3 cups water with turmeric and salt for 20–25 min until tender. Drain excess water.',
+        'In a small pan, heat cooking spray over medium-high. Sizzle cumin seeds 30 sec. Add onion, cook until golden 5–6 min. Add garlic 1 more min. Pour over lentils and stir.',
+        'Oven broiler method: broil 4–5 inches from heat element for 8–10 min total, flipping once halfway. Yogurt coating will blacken at edges — correct.',
+        'Air fryer option: 400°F (200°C) for 12–14 min, flipping halfway.',
+        'Cooktop option: cast iron pan on very high heat, 4–5 min per side until deeply browned.',
+        'Serve kebabs over lentils with fresh coriander and lemon wedges.',
+      ],
+      tip: 'Broiling is the best grill substitute here — overhead high heat mimics a tandoor. Don\'t keep opening the oven; let it char.',
+    }
+  },
+  Wednesday: {
+    light: {
+      name: 'Tuna + rice cake stack',
+      cal:310, pro:46, fat:4, carb:26,
+      ingredients: [
+        {qty:'2 cans (5oz each)', item:'water-packed tuna, drained'},
+        {qty:'1 tbsp', item:'yellow mustard'},
+        {qty:'2 stalks', item:'celery, finely diced'},
+        {qty:'1/4', item:'red onion, finely diced'},
+        {qty:'to taste', item:'black pepper'},
+        {qty:'optional', item:'squeeze of lemon or hot sauce'},
+        {qty:'4', item:'plain rice cakes'},
+      ],
+      steps: [
+        'Drain tuna thoroughly — press the lid against the fish to squeeze out all water.',
+        'Mix tuna with mustard, diced celery, and red onion. Season with black pepper.',
+        'Add lemon juice or hot sauce if using.',
+        'Top each rice cake with a generous amount of tuna mix.',
+        'Eat immediately while rice cakes are still crispy.',
+      ],
+      tip: 'Lightly salted rice cakes add more flavour without extra calories.',
+    },
+    dinner: {
+      name: 'Chicken suya with jollof rice',
+      cuisine:'Nigerian',
+      cal:1110, pro:102, fat:12, carb:116,
+      ingredients: [
+        {qty:'8 oz (225g)', item:'chicken breast, sliced very thin (~1/4 inch)'},
+        {sep:'Suya spice (yaji)'},
+        {qty:'2 tbsp', item:'ground roasted peanuts or peanut powder'},
+        {qty:'1 tsp', item:'paprika'},
+        {qty:'1 tsp', item:'ground ginger'},
+        {qty:'1 tsp', item:'garlic powder'},
+        {qty:'1/2 tsp', item:'cayenne pepper'},
+        {qty:'1/2 tsp', item:'onion powder'},
+        {qty:'1/2 tsp', item:'salt'},
+        {sep:'Jollof rice'},
+        {qty:'1.5 cups (300g)', item:'long grain parboiled rice'},
+        {qty:'4 medium', item:'tomatoes, blended'},
+        {qty:'1', item:'red bell pepper, blended'},
+        {qty:'1 (optional)', item:'scotch bonnet or habanero pepper'},
+        {qty:'1 medium', item:'onion, blended'},
+        {qty:'2 cups', item:'low-sodium chicken stock'},
+        {qty:'1 tsp', item:'tomato paste'},
+        {qty:'1 tsp', item:'curry powder'},
+        {qty:'1 tsp', item:'thyme'},
+        {qty:'1', item:'bay leaf'},
+        {qty:'to taste', item:'salt'},
+        {sep:'To serve'},
+        {qty:'1/2', item:'red onion, sliced thin'},
+        {qty:'1', item:'tomato, sliced'},
+      ],
+      steps: [
+        'Mix suya spice ingredients. Coat chicken slices thoroughly. Marinate at least 30 min.',
+        'Blend tomatoes, bell pepper, scotch bonnet, and half the onion until smooth.',
+        'Cook blended tomato mixture in a pot over medium-high heat for 15–20 min, stirring, until raw smell is gone and sauce has darkened.',
+        'Add tomato paste, curry powder, thyme, bay leaf, and stock. Season with salt.',
+        'Add washed rice. Stir, cover tightly. Reduce heat to low, cook 25–30 min. Add a splash of stock halfway if dry.',
+        'Cooktop suya: heat a cast iron or heavy pan to maximum heat. Cook chicken strips 2–3 min per side until edges are blackened. Work in batches, don\'t crowd.',
+        'Air fryer option: 400°F (200°C) for 8–10 min, flipping halfway.',
+        'Serve rice topped with suya, sliced raw onion, and tomato.',
+      ],
+      tip: 'Pan must be screaming hot before chicken goes in. Cast iron is ideal. Open a window — it will smoke.',
+    }
+  },
+  Thursday: {
+    light: {
+      name: 'Egg white omelette with cottage cheese + tortillas',
+      cal:320, pro:46, fat:5, carb:24,
+      ingredients: [
+        {qty:'6 large', item:'egg whites'},
+        {qty:'1/2 cup (115g)', item:'low-fat cottage cheese'},
+        {qty:'1 medium', item:'tomato, diced'},
+        {qty:'1', item:'jalapeño, seeded and minced (optional)'},
+        {qty:'to taste', item:'salt and black pepper'},
+        {qty:'as needed', item:'cooking spray'},
+        {qty:'2 small', item:'corn tortillas'},
+        {qty:'to serve', item:'salsa'},
+      ],
+      steps: [
+        'Whisk egg whites with salt and pepper until slightly frothy.',
+        'Heat non-stick pan over medium heat. Spray generously.',
+        'Pour egg whites in and let set at edges, about 1 min.',
+        'Add cottage cheese, diced tomato, and jalapeño to one half.',
+        'Fold omelette over and press gently. Cook 1 more min — don\'t overcook.',
+        'Warm tortillas in a dry pan.',
+        'Serve omelette with tortillas and salsa.',
+      ],
+      tip: 'Slide the omelette out with a spatula rather than flipping — egg whites tear easily.',
+    },
+    dinner: {
+      name: 'Masala shrimp with red lentil dal',
+      cuisine:'Indian',
+      cal:1060, pro:109, fat:9, carb:70,
+      ingredients: [
+        {qty:'10 oz (280g)', item:'large shrimp, peeled and deveined'},
+        {sep:'Shrimp spice rub'},
+        {qty:'1 tsp', item:'garam masala'},
+        {qty:'1/2 tsp', item:'turmeric'},
+        {qty:'1/2 tsp', item:'chili powder'},
+        {qty:'1/2 tsp', item:'cumin'},
+        {qty:'2 cloves', item:'garlic, minced'},
+        {qty:'to taste', item:'salt'},
+        {sep:'Red lentil dal'},
+        {qty:'1.5 cups (300g)', item:'dry red lentils'},
+        {qty:'1 medium', item:'onion, finely diced'},
+        {qty:'3 cloves', item:'garlic, minced'},
+        {qty:'1 tsp', item:'fresh ginger, grated'},
+        {qty:'2 medium', item:'tomatoes, diced'},
+        {qty:'1 tsp', item:'cumin seeds'},
+        {qty:'1 tsp', item:'ground coriander'},
+        {qty:'1/2 tsp', item:'turmeric'},
+        {qty:'1/2 tsp', item:'chili powder'},
+        {qty:'3 cups', item:'water or low-sodium vegetable stock'},
+        {qty:'to garnish', item:'fresh coriander and lemon'},
+      ],
+      steps: [
+        'Rinse red lentils until water runs clear. No soaking needed.',
+        'Heat cooking spray in a large pot over medium heat. Sizzle cumin seeds 30 sec.',
+        'Add onion, cook until golden brown ~8 min. Add garlic and ginger, cook 2 more min.',
+        'Add tomatoes, cook until they break down ~5 min. Add coriander, turmeric, chili powder.',
+        'Add lentils and water/stock. Bring to boil, then simmer uncovered 20–25 min until lentils collapse into a thick stew. Season with salt.',
+        'Toss shrimp with garam masala, turmeric, chili, cumin, garlic, and salt.',
+        'Heat pan to highest cooktop heat. Spray with cooking spray. Add shrimp in a single layer — should sizzle loudly.',
+        'Cook 1.5–2 min per side until pink with slightly charred edges. Pull off as soon as they curl.',
+        'Serve shrimp alongside a large bowl of dal with coriander and lemon.',
+      ],
+      tip: 'Shrimp cooks in under 4 min total. The key is a very hot pan and not moving them until time to flip.',
+    }
+  },
+  Friday: {
+    light: {
+      name: 'Protein smoothie bowl',
+      cal:380, pro:48, fat:3, carb:52,
+      ingredients: [
+        {qty:'1 cup', item:'frozen mango chunks'},
+        {qty:'1 scoop (30g)', item:'unflavored or vanilla whey protein powder'},
+        {qty:'1 cup (240g)', item:'nonfat plain Greek yogurt'},
+        {qty:'2–3 tbsp', item:'water (add slowly — less is more)'},
+        {qty:'1', item:'banana, sliced (topping)'},
+        {qty:'optional', item:'sprinkle of cinnamon'},
+      ],
+      steps: [
+        'Add frozen mango, protein powder, and Greek yogurt to a blender.',
+        'Blend, adding water one tablespoon at a time — only enough to get blender moving. Should be very thick, like soft-serve.',
+        'Pour into a wide bowl (not a glass).',
+        'Top with sliced banana.',
+        'Eat immediately with a spoon.',
+      ],
+      tip: 'If too thin, add more frozen fruit or yogurt. Thickness is what makes it filling.',
+    },
+    dinner: {
+      name: 'Tuna poke with shirataki + white rice blend',
+      cal:1050, pro:101, fat:13, carb:80,
+      ingredients: [
+        {qty:'12 oz (340g)', item:'sushi-grade tuna, diced into 1/2-inch cubes'},
+        {sep:'Poke dressing'},
+        {qty:'3 tbsp', item:'low-sodium soy sauce'},
+        {qty:'1 tsp', item:'sesame oil'},
+        {qty:'1 tsp', item:'rice vinegar'},
+        {qty:'1/2 tsp', item:'sriracha (optional)'},
+        {sep:'Bowl'},
+        {qty:'1 cup cooked', item:'white rice'},
+        {qty:'1 cup', item:'shirataki (konjac) rice, rinsed and dry-toasted'},
+        {qty:'1/2 cup', item:'cucumber, diced'},
+        {qty:'1/2 cup', item:'shelled edamame (frozen, thawed)'},
+        {qty:'3', item:'green onions, sliced'},
+        {qty:'1 tsp', item:'sesame seeds'},
+        {qty:'optional', item:'sliced avocado'},
+      ],
+      steps: [
+        'Rinse shirataki rice thoroughly under cold water. Toast in a dry pan over medium heat 2–3 min until moisture evaporates and briny smell is gone. Essential step.',
+        'Mix white rice and shirataki rice together.',
+        'Mix dressing ingredients together.',
+        'Toss diced tuna gently with dressing. Refrigerate 10 min if time allows.',
+        'Assemble bowl: rice blend at base, then tuna, cucumber, edamame, and green onions on top.',
+        'Drizzle remaining dressing. Sprinkle sesame seeds.',
+        'Serve immediately — tuna cold, rice at room temp.',
+      ],
+      tip: 'Always dry-toast shirataki first — skipping this leaves a rubbery texture and off-smell.',
+    }
+  },
+  Saturday: {
+    light: {
+      name: 'Egg white breakfast burrito',
+      cal:420, pro:44, fat:10, carb:38,
+      ingredients: [
+        {qty:'8 large', item:'egg whites'},
+        {qty:'1', item:'jalapeño, seeded and minced'},
+        {qty:'1/2', item:'white onion, diced'},
+        {qty:'1 oz (28g)', item:'low-fat cheddar cheese'},
+        {qty:'to taste', item:'salt and black pepper'},
+        {qty:'as needed', item:'cooking spray'},
+        {qty:'2 medium', item:'flour tortillas'},
+        {qty:'to serve', item:'salsa'},
+        {qty:'optional', item:'hot sauce'},
+      ],
+      steps: [
+        'Heat pan over medium heat, spray with cooking spray.',
+        'Cook onion and jalapeño 3–4 min until soft.',
+        'Add egg whites, season with salt and pepper. Stir slowly until just set.',
+        'Remove from heat, add cheese and let melt.',
+        'Warm tortillas in a dry pan — 20 sec per side. Cold tortillas crack.',
+        'Divide egg white mixture between two tortillas. Add salsa.',
+        'Fold in sides, then roll up tightly.',
+      ],
+      tip: 'Always warm tortillas before rolling — cold ones crack.',
+    },
+    dinner: {
+      name: 'Jamaican brown stew chicken with cauliflower rice',
+      cuisine:'Jamaican',
+      cal:1050, pro:99, fat:8, carb:90,
+      ingredients: [
+        {qty:'8 oz (225g)', item:'bone-in or boneless chicken thighs'},
+        {sep:'Marinade'},
+        {qty:'2 tsp', item:'browning sauce (Grace brand or similar)'},
+        {qty:'1 tsp', item:'all-purpose seasoning'},
+        {qty:'1/2 tsp', item:'black pepper'},
+        {qty:'1/2 tsp', item:'paprika'},
+        {qty:'3 cloves', item:'garlic, minced'},
+        {sep:'Stew'},
+        {qty:'1/2', item:'onion, sliced'},
+        {qty:'1/2', item:'red bell pepper, sliced'},
+        {qty:'2 sprigs', item:'fresh thyme'},
+        {qty:'2 stalks', item:'green onion, roughly chopped'},
+        {qty:'1 whole', item:'scotch bonnet pepper (do not pierce)'},
+        {qty:'1 large', item:'carrot, sliced'},
+        {qty:'1 tsp', item:'browning sauce'},
+        {qty:'1 cup', item:'low-sodium chicken stock'},
+        {sep:'Cauliflower rice'},
+        {qty:'4 cups', item:'riced cauliflower'},
+        {qty:'2', item:'green onions, sliced'},
+        {qty:'1 tsp', item:'thyme'},
+        {qty:'to taste', item:'salt and pepper'},
+      ],
+      steps: [
+        'Mix marinade ingredients and coat chicken. Marinate at least 1 hour, overnight is better.',
+        'Heat a heavy-bottomed pot or Dutch oven over high heat on the cooktop. Spray generously.',
+        'Brown chicken hard on both sides 4–5 min per side until deeply caramelised. Work in batches — don\'t crowd. This step builds all the flavour.',
+        'Remove chicken. In same pot, cook onion, bell pepper, thyme, green onion, and carrot 3–4 min.',
+        'Return chicken. Add whole scotch bonnet (don\'t pierce), stock, and remaining browning sauce.',
+        'Bring to boil, reduce to low. Cover and braise 30–35 min until chicken is tender and sauce has thickened.',
+        'Remove scotch bonnet before serving.',
+        'Stir-fry cauliflower rice in a hot pan with cooking spray, green onion, thyme, salt, and pepper for 5–6 min.',
+        'Serve chicken and stew over cauliflower rice.',
+      ],
+      tip: 'Don\'t pierce the scotch bonnet — whole it infuses fragrant heat without making the stew nuclear.',
+    }
+  },
+  Sunday: {
+    light: {
+      name: 'Nonfat cottage cheese + pineapple',
+      cal:340, pro:50, fat:4, carb:32,
+      ingredients: [
+        {qty:'2 cups (450g)', item:'nonfat cottage cheese'},
+        {qty:'1 cup', item:'fresh or canned pineapple chunks (in juice, not syrup)'},
+        {qty:'optional', item:'pinch of black pepper'},
+      ],
+      steps: [
+        'Scoop cottage cheese into a bowl.',
+        'Top with pineapple.',
+        'Add a crack of black pepper if desired.',
+        'Eat cold.',
+      ],
+      tip: 'If texture bothers you, blend briefly until smooth — same macros, completely creamy.',
+    },
+    dinner: {
+      name: 'Nigerian pepper soup with lentils',
+      cuisine:'Nigerian',
+      cal:1060, pro:100, fat:11, carb:68,
+      ingredients: [
+        {qty:'8 oz (225g)', item:'goat meat pieces or bone-in chicken'},
+        {sep:'Pepper soup base'},
+        {qty:'1 packet', item:'pepper soup spice blend (African grocery store)'},
+        {qty:'2', item:'habanero or scotch bonnet peppers (adjust to taste)'},
+        {qty:'1 medium', item:'onion, diced'},
+        {qty:'1 tbsp', item:'dried ground crayfish (African grocery — essential)'},
+        {qty:'1 tsp', item:'salt'},
+        {qty:'4 cups', item:'water'},
+        {qty:'2 cups', item:'uziza leaves or baby spinach, roughly torn'},
+        {sep:'Lentils'},
+        {qty:'1 cup (200g)', item:'dry green lentils'},
+        {qty:'1/2 tsp', item:'cumin'},
+        {qty:'to taste', item:'salt'},
+      ],
+      steps: [
+        'Rinse meat and place in a pot. Add onion, half the pepper soup spice, crayfish, and 1 cup water.',
+        'Cook over medium heat: 20 min for chicken, 40 min for goat, until meat is starting to get tender.',
+        'Add remaining 3 cups water, remaining spice blend, and whole habanero peppers.',
+        'Bring to boil, reduce heat, simmer 20–30 min. Broth should be deeply fragrant and amber-coloured.',
+        'Add uziza or spinach. Simmer 5 more min. Taste and adjust salt.',
+        'For lentils: simmer in 2 cups water with cumin and salt 20–25 min until tender. Drain excess.',
+        'Serve large bowl of pepper soup with lentils on the side.',
+      ],
+      tip: 'Crayfish is non-negotiable — it provides a depth of umami nothing else replicates. Sold in small packets at Nigerian/West African grocery stores.',
+    }
+  }
+};
+
+const GROCERY_CATEGORIES = {
+  'Proteins': [
+    {item:'chicken thighs, boneless skinless', qty:'8 oz', days:'Mon'},
+    {item:'turkey (ground or breast)', qty:'8 oz', days:'Tue'},
+    {item:'chicken breast', qty:'8 oz', days:'Wed'},
+    {item:'shrimp, large (peeled/deveined)', qty:'10 oz', days:'Thu'},
+    {item:'sushi-grade tuna', qty:'12 oz', days:'Fri'},
+    {item:'chicken thighs (bone-in or boneless)', qty:'8 oz', days:'Sat'},
+    {item:'goat meat or bone-in chicken', qty:'8 oz', days:'Sun'},
+    {item:'water-packed tuna cans (5oz)', qty:'2 cans', days:'Wed light'},
+    {item:'eggs (large)', qty:'2 dozen', days:'Mon/Thu/Sat light'},
+    {item:'whey protein powder', qty:'1 scoop (30g)', days:'Fri light'},
+  ],
+  'Dairy & yogurt': [
+    {item:'nonfat plain Greek yogurt', qty:'4 cups (1 large tub)', days:'Tue/Fri light'},
+    {item:'nonfat plain yogurt (for marinade)', qty:'1/2 cup', days:'Tue dinner'},
+    {item:'nonfat cottage cheese', qty:'4.5 cups', days:'Thu light/Sun light'},
+    {item:'reduced-fat cheddar or Mexican blend', qty:'2 oz', days:'Mon light/Sat light'},
+  ],
+  'Produce': [
+    {item:'bell peppers (mixed)', qty:'4 medium', days:'Mon/Wed/Sat'},
+    {item:'cauliflower (or pre-riced)', qty:'2 large heads', days:'Mon/Sat dinner'},
+    {item:'tomatoes', qty:'8 medium', days:'Thu light/Wed/Sun'},
+    {item:'onions (white/yellow)', qty:'4 medium', days:'throughout'},
+    {item:'red onion', qty:'2', days:'Wed light/Wed/Fri'},
+    {item:'jalapeños', qty:'3', days:'Thu light/Sat light'},
+    {item:'baby spinach', qty:'3 large handfuls', days:'Mon light/Sun'},
+    {item:'celery', qty:'1 bunch', days:'Wed light'},
+    {item:'green onions (spring onions)', qty:'2 bunches', days:'throughout'},
+    {item:'garlic', qty:'2 bulbs', days:'throughout'},
+    {item:'fresh ginger', qty:'1 large knob', days:'Mon/Tue/Thu'},
+    {item:'cucumber', qty:'1 large', days:'Fri dinner'},
+    {item:'carrot', qty:'2 large', days:'Sat dinner'},
+    {item:'limes', qty:'3', days:'Mon dinner/Fri'},
+    {item:'lemons', qty:'3', days:'Tue/Thu'},
+    {item:'bananas', qty:'1', days:'Fri light'},
+    {item:'strawberries (fresh or frozen)', qty:'1 cup', days:'Tue light'},
+    {item:'frozen mango chunks', qty:'1 cup', days:'Fri light'},
+    {item:'pineapple (fresh or canned in juice)', qty:'1 cup', days:'Sun light'},
+    {item:'uziza leaves or baby spinach', qty:'2 cups', days:'Sun dinner'},
+  ],
+  'Grains & pantry': [
+    {item:'corn tortillas (small)', qty:'1 pack', days:'Mon/Thu light'},
+    {item:'flour tortillas (medium)', qty:'4', days:'Sat light'},
+    {item:'plain rice cakes', qty:'4', days:'Wed light'},
+    {item:'long grain parboiled rice', qty:'1.5 cups dry', days:'Wed dinner'},
+    {item:'white rice (jasmine or long grain)', qty:'1 cup cooked', days:'Fri dinner'},
+    {item:'shirataki (konjac) rice', qty:'1 bag', days:'Fri dinner'},
+    {item:'green or brown lentils', qty:'2.5 cups dry', days:'Tue/Sun'},
+    {item:'red lentils', qty:'1.5 cups dry', days:'Thu dinner'},
+  ],
+  'Canned & sauces': [
+    {item:'low-sodium soy sauce', qty:'1 bottle', days:'Mon/Wed/Fri'},
+    {item:'low-sodium chicken stock', qty:'3 cups', days:'Wed/Sat'},
+    {item:'low-sodium vegetable stock', qty:'3 cups', days:'Thu'},
+    {item:'tomato paste', qty:'1 small can', days:'Wed'},
+    {item:'browning sauce (Grace brand)', qty:'1 bottle', days:'Sat dinner'},
+    {item:'shelled edamame (frozen)', qty:'1/2 cup', days:'Fri'},
+    {item:'salsa', qty:'1 jar', days:'Mon/Thu/Sat light'},
+    {item:'yellow mustard', qty:'1 bottle', days:'Wed light'},
+    {item:'sriracha or hot sauce', qty:'1 bottle', days:'optional'},
+    {item:'honey', qty:'small amount', days:'Tue light'},
+    {item:'sesame oil', qty:'small bottle', days:'Fri'},
+    {item:'rice vinegar', qty:'small bottle', days:'Fri'},
+    {item:'sesame seeds', qty:'1 small bag', days:'Fri'},
+  ],
+  'Spices & dried': [
+    {item:'ground allspice', qty:'small jar', days:'Mon dinner'},
+    {item:'dried thyme', qty:'small jar', days:'Mon/Sat'},
+    {item:'cinnamon', qty:'small jar', days:'Mon'},
+    {item:'tandoori masala powder', qty:'small jar', days:'Tue'},
+    {item:'cumin (ground & seeds)', qty:'small jars', days:'Tue/Thu'},
+    {item:'ground coriander', qty:'small jar', days:'Tue/Thu'},
+    {item:'turmeric', qty:'small jar', days:'Tue/Thu'},
+    {item:'chili powder', qty:'small jar', days:'Tue/Thu'},
+    {item:'garam masala', qty:'small jar', days:'Thu'},
+    {item:'paprika', qty:'small jar', days:'Wed/Sat'},
+    {item:'cayenne pepper', qty:'small jar', days:'Wed/Thu'},
+    {item:'curry powder', qty:'small jar', days:'Wed'},
+    {item:'bay leaves', qty:'small pack', days:'Wed'},
+    {item:'garlic powder', qty:'small jar', days:'Mon/Wed'},
+    {item:'onion powder', qty:'small jar', days:'Wed'},
+    {item:'ground ginger', qty:'small jar', days:'Wed'},
+    {item:'brown sugar', qty:'small amount', days:'Mon'},
+    {item:'pepper soup spice blend', qty:'1 packet', days:'Sun — African grocery'},
+    {item:'ground crayfish (dried)', qty:'1 tbsp', days:'Sun — African grocery'},
+    {item:'ground roasted peanuts / peanut powder', qty:'2 tbsp', days:'Wed'},
+    {item:'all-purpose seasoning', qty:'small jar', days:'Sat'},
+  ],
+  'Peppers (specialty)': [
+    {item:'scotch bonnet or habanero peppers', qty:'8–10', days:'Mon/Wed/Sat/Sun'},
+  ]
+};
+
+const PREP_TIPS = [
+  {title:'Make all marinades Sunday night', tags:['Sunday prep'], tip:'Jerk marinade (Mon), tandoori marinade (Tue), and suya spice rub (Wed) can all be made the night before. Chicken thighs go straight into the jerk marinade overnight. Turkey can go into tandoori marinade too. This saves 20+ min on Monday and Tuesday.', tagStyle:''},
+  {title:'Batch-cook lentils for 3 days', tags:['Tue','Thu','Sun'], tip:'Cook a large pot of lentils on Sunday or Tuesday — they keep for 4 days in the fridge. Green lentils cover Tuesday dinner and Sunday dinner. Red lentils for Thursday are different and need to be cooked separately, but they cook fast (20–25 min) and can also be made in bulk and refrigerated.', tagStyle:'prep-tag'},
+  {title:'Rice cauliflower in one session', tags:['Mon','Sat'], tip:'Pulse and store cauliflower rice on Sunday for both Monday and Saturday. It keeps for 3–4 days raw in the fridge in an airtight container. Just stir-fry when needed — takes 5–7 min.', tagStyle:'prep-tag'},
+  {title:'Jollof base is the time-consuming part', tags:['Wed'], tip:'The blended tomato base for Wednesday\'s jollof rice needs 15–20 min of cooking to lose the raw flavour. If you want to save time on Wednesday, blend and cook down the tomato base ahead of time. It keeps in the fridge for 3 days.', tagStyle:'prep-tag'},
+  {title:'Red lentil dal doubles as meal prep', tags:['Thu','make extra'], tip:'Thursday\'s red lentil dal is arguably the best meal prep item in the whole plan. It reheats better than almost anything and thickens beautifully overnight. Make double the amount — eat it Thursday with shrimp, and use it as a side later in the week or for lunch.', tagStyle:'prep-tag-amber'},
+  {title:'Dry-toast shirataki rice in advance', tags:['Fri'], tip:'The shirataki rice for Friday\'s poke bowl can be rinsed and dry-toasted in a pan ahead of time. Mix it with white rice and store in the fridge — it\'s fine cold in a poke bowl anyway.', tagStyle:'prep-tag'},
+  {title:'Brown stew chicken is great leftover', tags:['Sat'], tip:'Saturday\'s brown stew chicken improves overnight as the sauce deepens. Make a bigger batch and use the leftover stew chicken with cauliflower rice or lentils on Sunday if you want a break from pepper soup.', tagStyle:'prep-tag-amber'},
+  {title:'Grocery run priorities', tags:['fresh','buy day-of'], tip:'Sushi-grade tuna for Friday\'s poke bowl should be bought the day of (Friday) or the day before at the latest. Everything else can be bought at the start of the week. Scotch bonnets and browning sauce may require a Caribbean or African grocery store — plan that trip early.', tagStyle:'prep-tag-amber'},
+];
+
+const SWAPS = {
+  light: [
+    {name:'Egg white veggie scramble + corn tortillas', cal:340, pro:38, fat:7, carb:28, desc:'8 egg whites with bell pepper, onion, spinach, cheese. Quick cooktop meal.'},
+    {name:'Nonfat Greek yogurt parfait', cal:290, pro:42, fat:2, carb:34, desc:'2 cups yogurt with strawberries and honey. Zero cooking required.'},
+    {name:'Tuna + rice cake stack', cal:310, pro:46, fat:4, carb:26, desc:'2 cans tuna with mustard and celery on rice cakes. 5-minute prep.'},
+    {name:'Egg white omelette with cottage cheese', cal:320, pro:46, fat:5, carb:24, desc:'6 egg whites folded with cottage cheese, tomato, jalapeño + 2 corn tortillas.'},
+    {name:'Protein smoothie bowl', cal:380, pro:48, fat:3, carb:52, desc:'Frozen mango, whey protein, Greek yogurt — thick, eaten with a spoon.'},
+    {name:'Egg white breakfast burrito', cal:420, pro:44, fat:10, carb:38, desc:'8 egg whites with jalapeño, onion, cheese in 2 flour tortillas.'},
+    {name:'Nonfat cottage cheese + pineapple', cal:340, pro:50, fat:4, carb:32, desc:'2 cups cottage cheese with pineapple. Simplest light meal on the plan.'},
+  ],
+  dinner: [
+    {name:'Jerk chicken with cauliflower rice', cal:1050, pro:114, fat:10, carb:90, desc:'Jamaican. Oven at 425°F for 25–30 min + broil. Overnight marinade.'},
+    {name:'Tandoori turkey kebabs with green lentils', cal:1070, pro:116, fat:11, carb:72, desc:'Indian. Broiler 8–10 min. Yogurt-marinated turkey over lentils.'},
+    {name:'Chicken suya with jollof rice', cal:1110, pro:102, fat:12, carb:116, desc:'Nigerian. Cast iron cooktop. Peanut-spiced chicken over tomato rice.'},
+    {name:'Masala shrimp with red lentil dal', cal:1060, pro:109, fat:9, carb:70, desc:'Indian. 4-min cooktop shrimp. Thick, filling lentil dal base.'},
+    {name:'Tuna poke with shirataki + white rice', cal:1050, pro:101, fat:13, carb:80, desc:'No cooking. Sushi-grade tuna, soy dressing, 50/50 shirataki + white rice.'},
+    {name:'Jamaican brown stew chicken with cauliflower rice', cal:1050, pro:99, fat:8, carb:90, desc:'Jamaican. Cooktop braise 30–35 min. Deep, savoury stew over cauli rice.'},
+    {name:'Nigerian pepper soup with lentils', cal:1060, pro:100, fat:11, carb:68, desc:'Nigerian. Cooktop simmer. High-volume spiced broth with lentils.'},
+  ]
+};
+
+// ─────────────────────────────────────────────
+// STATE
+let currentRecipeDay = 0;
+let currentCookDay = 0;
+let currentCookMeal = 'dinner';
+let currentCookStep = 0;
+let groceryServings = 2;
+let checkedGroceries = new Set();
+let macroLog = [];
+let timers = {};
+let swapDay = 0;
+let swapMeal = 'dinner';
+
+// ─────────────────────────────────────────────
+// NAV
+function showPage(id) {
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+  document.getElementById('page-'+id).classList.add('active');
+  event.target.classList.add('active');
+  if(id==='grocery') renderGrocery();
+  if(id==='macros') renderMacros();
+  if(id==='prep') renderPrep();
+  if(id==='swap') renderSwap();
+  if(id==='cook') renderCookMode();
+}
+
+// ─────────────────────────────────────────────
+// RECIPES PAGE
+function initRecipeDays() {
+  const strip = document.getElementById('recipe-days');
+  DAYS.forEach((d,i) => {
+    const b = document.createElement('button');
+    b.className = 'day-btn' + (i===0?' active':'');
+    b.textContent = d.slice(0,3);
+    b.onclick = () => {
+      document.querySelectorAll('#recipe-days .day-btn').forEach(x=>x.classList.remove('active'));
+      b.classList.add('active');
+      currentRecipeDay = i;
+      renderRecipeDay(i);
+    };
+    strip.appendChild(b);
+  });
+  renderRecipeDay(0);
+}
+
+function renderRecipeDay(i, servings) {
+  const day = DAYS[i];
+  const meal = DATA[day];
+  const srv = servings || 2;
+  const container = document.getElementById('recipe-content');
+  container.innerHTML = renderMealCard(meal.light, 'Light meal', null, srv, day, 'light') + renderMealCard(meal.dinner, 'Big dinner', meal.dinner.cuisine||null, srv, day, 'dinner');
+}
+
+function renderMealCard(m, label, cuisine, srv, day, mealKey) {
+  const mul = srv / 1;
+  return `
+  <div class="card">
+    <div class="card-header">
+      <div>
+        <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--muted);margin-bottom:4px">${label}</div>
+        <div class="card-title">${m.name}</div>
+        ${cuisine ? `<span class="badge" style="margin-top:6px">${cuisine}</span>` : ''}
+      </div>
+      <div style="display:flex;align-items:center;gap:6px">
+        <button class="qty-btn" onclick="changeServings('${day}','${mealKey}',-1,this)" style="width:24px;height:24px;font-size:14px">−</button>
+        <span style="font-size:13px;min-width:50px;text-align:center;color:var(--muted)" class="srv-label-${day}-${mealKey}">${srv} serving${srv!==1?'s':''}</span>
+        <button class="qty-btn" onclick="changeServings('${day}','${mealKey}',1,this)" style="width:24px;height:24px;font-size:14px">+</button>
+      </div>
+    </div>
+    <div class="macro-row">
+      <div class="macro-cell"><div class="macro-val">${Math.round(m.cal*srv)}</div><div class="macro-lbl">calories</div></div>
+      <div class="macro-cell"><div class="macro-val">${Math.round(m.pro*srv)}g</div><div class="macro-lbl">protein</div></div>
+      <div class="macro-cell"><div class="macro-val">${Math.round(m.fat*srv)}g</div><div class="macro-lbl">fat</div></div>
+      <div class="macro-cell"><div class="macro-val">${Math.round(m.carb*srv)}g</div><div class="macro-lbl">carbs</div></div>
+    </div>
+    <div class="section-label">Ingredients</div>
+    <ul class="ing-list">
+      ${m.ingredients.map(ing => ing.sep
+        ? `<li class="ing-sep">${ing.sep}</li>`
+        : `<li class="ing-item"><span class="ing-dot"></span><span style="min-width:90px;color:var(--teal);font-size:13px;font-weight:500">${scaleQty(ing.qty,srv)}</span><span>${ing.item}</span></li>`
+      ).join('')}
+    </ul>
+    <div class="section-label">Instructions</div>
+    <ol class="step-list">
+      ${m.steps.map((s,idx) => `<li class="step-item"><span class="step-num">${idx+1}</span><span>${s}</span></li>`).join('')}
+    </ol>
+    <div class="tip-box"><strong>Tip:</strong> ${m.tip}</div>
+  </div>`;
+}
+
+const servingState = {};
+function changeServings(day, mealKey, delta, btn) {
+  const k = day+mealKey;
+  if(!servingState[k]) servingState[k] = 2;
+  servingState[k] = Math.max(1, servingState[k]+delta);
+  const srv = servingState[k];
+  const label = btn.parentElement.querySelector('.srv-label-'+day+'-'+mealKey);
+  label.textContent = srv + ' serving' + (srv!==1?'s':'');
+  const card = btn.closest('.card');
+  const m = DATA[day][mealKey];
+  const cells = card.querySelectorAll('.macro-cell .macro-val');
+  cells[0].textContent = Math.round(m.cal*srv);
+  cells[1].textContent = Math.round(m.pro*srv)+'g';
+  cells[2].textContent = Math.round(m.fat*srv)+'g';
+  cells[3].textContent = Math.round(m.carb*srv)+'g';
+  const ings = card.querySelectorAll('.ing-item');
+  let ingIdx = 0;
+  m.ingredients.forEach(ing => {
+    if(!ing.sep) {
+      ings[ingIdx].querySelectorAll('span')[1].textContent = scaleQty(ing.qty, srv);
+      ingIdx++;
+    }
+  });
+}
+
+function scaleQty(qty, srv) {
+  if(srv===1||!qty) return qty;
+  const match = qty.match(/^([\d.\/]+)\s*(.*)/);
+  if(!match) return qty;
+  let num = match[1].includes('/') ? eval(match[1]) : parseFloat(match[1]);
+  let rest = match[2];
+  let scaled = num * srv;
+  if(scaled===Math.round(scaled)) return Math.round(scaled)+(rest?' '+rest:'');
+  return parseFloat(scaled.toFixed(1))+(rest?' '+rest:'');
+}
+
+// ─────────────────────────────────────────────
+// COOK MODE
+function initCookSelects() {
+  const ds = document.getElementById('cook-day-select');
+  const ls = document.getElementById('log-day-select');
+  const sd = document.getElementById('swap-day-select');
+  DAYS.forEach((d,i) => {
+    ds.innerHTML += `<option value="${i}">${d}</option>`;
+    ls.innerHTML += `<option value="${i}">${d}</option>`;
+    sd.innerHTML += `<option value="${i}">${d}</option>`;
+  });
+}
+
+function updateCookMeal() {
+  renderCookMode();
+}
+
+function renderCookMode() {
+  currentCookDay = parseInt(document.getElementById('cook-day-select').value)||0;
+  currentCookMeal = document.getElementById('cook-meal-select').value;
+  currentCookStep = 0;
+  const day = DAYS[currentCookDay];
+  const meal = DATA[day][currentCookMeal];
+  const container = document.getElementById('cook-content');
+  const macroHtml = `
+    <div class="macro-row" style="margin-bottom:16px">
+      <div class="macro-cell"><div class="macro-val">${meal.cal}</div><div class="macro-lbl">cal</div></div>
+      <div class="macro-cell"><div class="macro-val">${meal.pro}g</div><div class="macro-lbl">protein</div></div>
+      <div class="macro-cell"><div class="macro-val">${meal.fat}g</div><div class="macro-lbl">fat</div></div>
+      <div class="macro-cell"><div class="macro-val">${meal.carb}g</div><div class="macro-lbl">carbs</div></div>
+    </div>`;
+  const stepsHtml = meal.steps.map((s,i) => `
+    <div class="cook-step${i===0?' current':''}" id="cook-step-${i}">
+      <div class="cook-step-header">
+        <div class="cook-num">${i+1}</div>
+        <div class="cook-step-title" style="font-size:14px;font-weight:500">Step ${i+1} of ${meal.steps.length}</div>
+      </div>
+      <div class="cook-step-text">${s}</div>
+      <div class="cook-controls">
+        ${i===0?`<button class="btn btn-primary btn-sm" onclick="nextCookStep(${i},${meal.steps.length})">Mark done & next</button>`:''}
+        ${detectTimerMinutes(s) ? `<div class="timer-box" id="timer-${i}">
+          <button onclick="toggleTimer(${i},${detectTimerMinutes(s)*60})" style="border:none;background:none;cursor:pointer;font-size:13px;color:var(--teal)" id="timer-btn-${i}">Start</button>
+          <span class="timer-display" id="timer-display-${i}">${formatTime(detectTimerMinutes(s)*60)}</span>
+          <button onclick="resetTimer(${i},${detectTimerMinutes(s)*60})" style="border:none;background:none;cursor:pointer;font-size:12px;color:var(--muted)">Reset</button>
+        </div>` : ''}
+      </div>
+    </div>`).join('');
+  container.innerHTML = `<div style="font-size:16px;font-weight:600;margin-bottom:4px">${meal.name}</div><div style="font-size:13px;color:var(--muted);margin-bottom:12px">${day} · ${currentCookMeal==='light'?'Light meal':'Big dinner'}</div>${macroHtml}${stepsHtml}<div class="tip-box" style="margin-top:8px"><strong>Tip:</strong> ${meal.tip}</div>`;
+}
+
+function nextCookStep(i, total) {
+  const cur = document.getElementById('cook-step-'+i);
+  cur.classList.remove('current');
+  cur.classList.add('done');
+  cur.querySelector('.cook-controls').innerHTML = '<span style="font-size:12px;color:var(--muted)">✓ Done</span>';
+  if(i+1 < total) {
+    const next = document.getElementById('cook-step-'+(i+1));
+    next.classList.add('current');
+    const day = DAYS[parseInt(document.getElementById('cook-day-select').value)||0];
+    const meal = DATA[day][document.getElementById('cook-meal-select').value];
+    const s = meal.steps[i+1];
+    const timerHtml = detectTimerMinutes(s) ? `<div class="timer-box" id="timer-${i+1}">
+      <button onclick="toggleTimer(${i+1},${detectTimerMinutes(s)*60})" style="border:none;background:none;cursor:pointer;font-size:13px;color:var(--teal)" id="timer-btn-${i+1}">Start</button>
+      <span class="timer-display" id="timer-display-${i+1}">${formatTime(detectTimerMinutes(s)*60)}</span>
+      <button onclick="resetTimer(${i+1},${detectTimerMinutes(s)*60})" style="border:none;background:none;cursor:pointer;font-size:12px;color:var(--muted)">Reset</button>
+    </div>` : '';
+    next.querySelector('.cook-controls').innerHTML = `<button class="btn btn-primary btn-sm" onclick="nextCookStep(${i+1},${total})">Mark done & next</button>${timerHtml}`;
+    next.scrollIntoView({behavior:'smooth',block:'nearest'});
+  } else {
+    cur.querySelector('.cook-controls').innerHTML = '<span style="font-size:13px;font-weight:500;color:var(--teal)">All steps complete!</span>';
+  }
+}
+
+function detectTimerMinutes(text) {
+  const patterns = [
+    /(\d+)–(\d+)\s*min/i,
+    /(\d+)\s*min/i,
+    /(\d+)\s*minutes/i,
+  ];
+  for(const p of patterns) {
+    const m = text.match(p);
+    if(m) return m[2] ? Math.round((parseInt(m[1])+parseInt(m[2]))/2) : parseInt(m[1]);
+  }
+  if(/30 sec/i.test(text)) return 0.5;
+  return null;
+}
+
+function formatTime(secs) {
+  const m = Math.floor(secs/60);
+  const s = Math.round(secs%60);
+  return m+':'+(s<10?'0':'')+s;
+}
+
+function toggleTimer(idx, totalSecs) {
+  if(timers[idx] && timers[idx].interval) {
+    clearInterval(timers[idx].interval);
+    timers[idx].interval = null;
+    document.getElementById('timer-btn-'+idx).textContent='Resume';
+    return;
+  }
+  if(!timers[idx]) timers[idx] = {remaining: totalSecs};
+  timers[idx].interval = setInterval(() => {
+    timers[idx].remaining--;
+    const disp = document.getElementById('timer-display-'+idx);
+    const box = document.getElementById('timer-'+idx);
+    if(!disp) { clearInterval(timers[idx].interval); return; }
+    if(timers[idx].remaining <= 0) {
+      clearInterval(timers[idx].interval);
+      disp.textContent = '0:00';
+      box.classList.add('done-timer');
+      document.getElementById('timer-btn-'+idx).textContent='Done!';
+    } else {
+      disp.textContent = formatTime(timers[idx].remaining);
+    }
+  }, 1000);
+  document.getElementById('timer-btn-'+idx).textContent='Pause';
+  document.getElementById('timer-'+idx).classList.add('running');
+}
+
+function resetTimer(idx, totalSecs) {
+  if(timers[idx] && timers[idx].interval) clearInterval(timers[idx].interval);
+  timers[idx] = {remaining: totalSecs};
+  const disp = document.getElementById('timer-display-'+idx);
+  const box = document.getElementById('timer-'+idx);
+  const btn = document.getElementById('timer-btn-'+idx);
+  if(disp) disp.textContent = formatTime(totalSecs);
+  if(box) { box.classList.remove('running','done-timer'); }
+  if(btn) btn.textContent = 'Start';
+}
+
+// ─────────────────────────────────────────────
+// GROCERY
+function renderGrocery() {
+  const container = document.getElementById('grocery-content');
+  let html = '';
+  const srv = groceryServings;
+  Object.entries(GROCERY_CATEGORIES).forEach(([cat, items]) => {
+    html += `<div class="grocery-section"><div class="grocery-section-title">${cat}</div>`;
+    items.forEach((item, i) => {
+      const key = cat+i;
+      const checked = checkedGroceries.has(key);
+      html += `<div class="grocery-item${checked?' checked':''}" id="gi-${key}">
+        <input type="checkbox" ${checked?'checked':''} onchange="toggleGrocery('${key}',this)">
+        <span class="grocery-qty">${scaleGroceryQty(item.qty, srv)}</span>
+        <span style="flex:1">${item.item}</span>
+        <span style="font-size:11px;color:var(--hint)">${item.days}</span>
+      </div>`;
+    });
+    html += '</div>';
+  });
+  container.innerHTML = html;
+  updateGroceryProgress();
+  document.getElementById('grocery-servings-label').textContent = srv + ' serving' + (srv!==1?'s':'');
+}
+
+function scaleGroceryQty(qty, srv) {
+  if(srv===1) return qty;
+  return qty;
+}
+
+function toggleGrocery(key, cb) {
+  const el = document.getElementById('gi-'+key);
+  if(cb.checked) { checkedGroceries.add(key); el.classList.add('checked'); }
+  else { checkedGroceries.delete(key); el.classList.remove('checked'); }
+  updateGroceryProgress();
+}
+
+function updateGroceryProgress() {
+  const total = document.querySelectorAll('.grocery-item').length;
+  const done = checkedGroceries.size;
+  const pct = total ? Math.round(done/total*100) : 0;
+  document.getElementById('grocery-progress').style.width = pct+'%';
+}
+
+function changeGroceryServings(delta) {
+  groceryServings = Math.max(1, groceryServings+delta);
+  document.getElementById('grocery-servings-num').textContent = groceryServings;
+  renderGrocery();
+}
+
+function checkAllGrocery() {
+  document.querySelectorAll('.grocery-item input[type=checkbox]').forEach((cb,i) => {
+    const key = cb.closest('.grocery-item').id.replace('gi-','');
+    checkedGroceries.add(key);
+    cb.checked = true;
+    cb.closest('.grocery-item').classList.add('checked');
+  });
+  updateGroceryProgress();
+}
+
+function clearAllGrocery() {
+  checkedGroceries.clear();
+  document.querySelectorAll('.grocery-item input[type=checkbox]').forEach(cb => {
+    cb.checked = false;
+    cb.closest('.grocery-item').classList.remove('checked');
+  });
+  updateGroceryProgress();
+}
+
+// ─────────────────────────────────────────────
+// MACRO TRACKER
+function renderMacros() {
+  renderMacroLog();
+  const grid = document.getElementById('weekly-overview');
+  grid.innerHTML = DAYS.map(d => {
+    const light = DATA[d].light;
+    const dinner = DATA[d].dinner;
+    const totCal = light.cal + dinner.cal;
+    const totPro = light.pro + dinner.pro;
+    const totFat = light.fat + dinner.fat;
+    const totCarb = light.carb + dinner.carb;
+    return `<div class="summary-card">
+      <div class="summary-card-day">${d}</div>
+      <div class="summary-card-cal">${totCal} <span style="font-size:14px;font-weight:400;color:var(--muted)">kcal</span></div>
+      <div class="summary-card-macros">${totPro}g protein · ${totFat}g fat · ${totCarb}g carbs</div>
+    </div>`;
+  }).join('');
+}
+
+function renderMacroLog() {
+  const container = document.getElementById('macro-log');
+  if(macroLog.length===0) {
+    container.innerHTML = '<div style="color:var(--hint);font-size:14px;padding:12px 0">Nothing logged yet. Add a meal below.</div>';
+    return;
+  }
+  let totCal=0,totPro=0,totFat=0,totCarb=0;
+  macroLog.forEach(e=>{totCal+=e.cal;totPro+=e.pro;totFat+=e.fat;totCarb+=e.carb;});
+  container.innerHTML = macroLog.map((e,i) => `
+    <div class="log-row">
+      <span class="log-meal">${e.day} — ${e.label}</span>
+      <span style="font-size:12px;color:var(--muted)">${e.pro}g P · ${e.fat}g F · ${e.carb}g C</span>
+      <span class="log-cal">${e.cal} kcal</span>
+      <span class="log-remove" onclick="removeMacroLog(${i})">×</span>
+    </div>`).join('') +
+    `<div class="daily-total">
+      <div>
+        <div class="daily-total-label">Today's total</div>
+        <div style="font-size:12px;color:var(--teal-mid);margin-top:2px">${totPro}g protein · ${totFat}g fat · ${totCarb}g carbs</div>
+      </div>
+      <div class="daily-total-val">${totCal} kcal</div>
+    </div>`;
+}
+
+function logMeal() {
+  const di = parseInt(document.getElementById('log-day-select').value)||0;
+  const mk = document.getElementById('log-meal-select').value;
+  const day = DAYS[di];
+  const m = DATA[day][mk];
+  macroLog.push({day, label: mk==='light'?'Light meal':'Big dinner', cal:m.cal, pro:m.pro, fat:m.fat, carb:m.carb});
+  renderMacroLog();
+}
+
+function removeMacroLog(i) {
+  macroLog.splice(i,1);
+  renderMacroLog();
+}
+
+// ─────────────────────────────────────────────
+// MEAL PREP
+function renderPrep() {
+  const container = document.getElementById('prep-content');
+  container.innerHTML = PREP_TIPS.map(tip => `
+    <div class="prep-card">
+      <div class="prep-card-title">${tip.title}</div>
+      <div style="margin-bottom:6px">${tip.tags.map(t=>`<span class="prep-tag ${tip.tagStyle||''}">${t}</span>`).join('')}</div>
+      <div class="prep-tip">${tip.tip}</div>
+    </div>`).join('');
+}
+
+// ─────────────────────────────────────────────
+// SWAP
+function renderSwap() {
+  swapDay = parseInt(document.getElementById('swap-day-select').value)||0;
+  swapMeal = document.getElementById('swap-meal-select').value;
+  const day = DAYS[swapDay];
+  const current = DATA[day][swapMeal];
+  const alts = SWAPS[swapMeal].filter(s => s.name !== current.name);
+  const container = document.getElementById('swap-content');
+  container.innerHTML = `
+    <div class="card" style="margin-bottom:16px;border-color:var(--teal);border-width:2px">
+      <div style="font-size:11px;font-weight:600;text-transform:uppercase;letter-spacing:.05em;color:var(--teal);margin-bottom:6px">Currently on your plan</div>
+      <div style="font-size:15px;font-weight:600;margin-bottom:4px">${current.name}</div>
+      <div class="macro-row">
+        <div class="macro-cell"><div class="macro-val">${current.cal}</div><div class="macro-lbl">cal</div></div>
+        <div class="macro-cell"><div class="macro-val">${current.pro}g</div><div class="macro-lbl">protein</div></div>
+        <div class="macro-cell"><div class="macro-val">${current.fat}g</div><div class="macro-lbl">fat</div></div>
+        <div class="macro-cell"><div class="macro-val">${current.carb}g</div><div class="macro-lbl">carbs</div></div>
+      </div>
+    </div>
+    <div style="font-size:13px;font-weight:600;color:var(--muted);margin-bottom:10px;text-transform:uppercase;letter-spacing:.05em">Alternative options</div>
+    ${alts.map(a => `
+      <div class="swap-card">
+        <div class="swap-card-title">${a.name}</div>
+        <div class="swap-card-desc" style="margin-bottom:8px">${a.desc}</div>
+        <div class="macro-row" style="margin:0">
+          <div class="macro-cell"><div class="macro-val">${a.cal}</div><div class="macro-lbl">cal</div></div>
+          <div class="macro-cell"><div class="macro-val">${a.pro}g</div><div class="macro-lbl">protein</div></div>
+          <div class="macro-cell"><div class="macro-val">${a.fat}g</div><div class="macro-lbl">fat</div></div>
+          <div class="macro-cell"><div class="macro-val">${a.carb}g</div><div class="macro-lbl">carbs</div></div>
+        </div>
+      </div>`).join('')}`;
+}
+
+// ─────────────────────────────────────────────
+// INIT
+initRecipeDays();
+initCookSelects();
+renderPrep();
+renderSwap();
+</script>
+</body>
+</html>
